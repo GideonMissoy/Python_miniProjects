@@ -59,41 +59,36 @@ def write(subject, obj):
     else:
         return False
 
-# Define the Bell-LaPadula model properties
-def no_read_up(subject, obj):
-    if subject.clearance_level.level >= obj.security_level.level:
-        return True
-    else:
-        return False
+def satisfies_ssc(subjects, objects):
+    for obj in objects:
+        max_clearance = SecurityLevel("Low", 0)
+        for subject in subjects:
+            if confinement(subject, obj) and subject.clearance_level.level > max_clearance.level:
+                max_clearance = subject.clearance_level
+        if obj.security_level.level > max_clearance.level:
+            return False
+    return True
 
-def no_write_down(subject, obj):
-    if subject.clearance_level.level <= obj.security_level.level:
-        return True
-    else:
-        return False
+# Check for the Star property
+star_property = True
+for obj in [doc1, doc2, doc3]:
+    if obj.security_level.level == 1:
+        for subject in [alice, bob, charlie]:
+            if not read(subject, obj):
+                star_property = False
+                break
+            if not write(subject, obj):
+                star_property = False
+                break
 
-def confinement(subject, obj):
-    if subject.category in obj.name:
-        return True
-    else:
-        return False
+def check_discretionary_security():
+    for subj in [alice, bob, charlie]:
+        for obj in [doc1, doc2, doc3]:
+            read_permitted = read(subj, obj)
+            write_permitted = write(subj, obj)
+            if read_permitted or write_permitted:
+                print(f"{subj.name} has access to {obj.name}")
+            else:
+                print(f"{subj.name} does not have access to {obj.name}")
 
-def simple_security(subject, obj, access):
-    if access(subject, obj):
-        return True
-    else:
-        return False
-
-def star_property(subject, obj, access):
-    if access(subject, obj):
-        for o in [x for x in [doc1, doc2, doc3] if x != obj]:
-            if no_read_up(subject, o) and no_write_down(subject, o):
-                if not access(subject, o):
-                    return False
-        return True
-    else:
-        return False
-
-def discretionary_security(subject, obj, access):
-   
-
+check_discretionary_security()
