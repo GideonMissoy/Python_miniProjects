@@ -59,9 +59,3 @@ def write(subject, obj):
     else:
         print(f"{subject.name} cannot write to {obj.name}")
 
-# Test the access control logic
-read(alice, doc1)  # Output: Alice can read Document 1
-read(bob, doc2)    # Output: Charlie can read Document 2
-write(bob, doc1)   # Output: Bob cannot write to Document 1
-write(charlie, doc3)  # Output: Charlie can write to Document 3
-
