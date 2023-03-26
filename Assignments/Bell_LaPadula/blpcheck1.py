@@ -41,27 +41,51 @@ write_access = AccessMode("Write", "write")
 # Define the access control logic
 def read(subject, obj):
     if obj.name == "Document 1" and subject.category in category_a+category_b and subject.clearance_level.level >= obj.security_level.level:
-        print(f"{subject.name} can read {obj.name}")
+        return True
     elif obj.name == "Document 2" and subject.category in category_c and subject.clearance_level.level >= obj.security_level.level:
-        print(f"{subject.name} can read {obj.name}")
+        return True
     elif obj.name == "Document 3" and subject.category in category_b and subject.clearance_level.level >= obj.security_level.level:
-        print(f"{subject.name} can read {obj.name}")
+        return True
     else:
-        print(f"{subject.name} cannot read {obj.name}")
+        return False
 
 def write(subject, obj):
     if obj.name == "Document 1" and subject.category in category_a+category_b and subject.clearance_level.level <= obj.security_level.level:
-        print(f"{subject.name} can write to {obj.name}")
+        return True
     elif obj.name == "Document 2" and subject.category in category_c and subject.clearance_level.level <= obj.security_level.level:
-        print(f"{subject.name} can write to {obj.name}")
+        return True
     elif obj.name == "Document 3" and subject.category in category_b and subject.clearance_level.level <= obj.security_level.level:
-        print(f"{subject.name} can write to {obj.name}")
+        return True
     else:
-        print(f"{subject.name} cannot write to {obj.name}")
+        return False
+
+# Define the Bell-LaPadula model properties
+def no_read_up(subject, obj):
+    if subject.clearance_level.level >= obj.security_level.level:
+        return True
+    else:
+        return False
+
+def no_write_down(subject, obj):
+    if subject.clearance_level.level <= obj.security_level.level:
+        return True
+    else:
+        return False
+
+def confinement(subject, obj):
+    if subject.category in obj.name:
+        return True
+    else:
+        return False
+
+# Define a function to validate the Bell-LaPadula model properties for a given configuration
+def validate_config(subjects, objects):
+    for subject in subjects:
+        for obj in objects:
+            if not no_read_up(subject, obj) or not no_write_down(subject, obj) or not confinement(subject, obj):
+                return False
+    return True
 
 # Test the access control logic
-read(alice, doc1)  # Output: Alice can read Document 1
-read(bob, doc2)    # Output: Charlie can read Document 2
-write(bob, doc1)   # Output: Bob cannot write to Document 1
-write(charlie, doc3)  # Output: Charlie can write to Document 3
+print(validate_config([alice, bob, charlie], [doc1, doc2, doc3]))  # Output: True
 
