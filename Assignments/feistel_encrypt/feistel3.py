@@ -1,16 +1,19 @@
 import argparse
 
+def feistel_round(left, right, key):
+    # Apply the round function, which is a bitwise AND operation
+    result = int(right, 2) & int(key, 2)
+    
+    # Swap the left and right halves and XOR the result with the left half
+    return right, "{0:b}".format(int(left, 2) ^ result).zfill(4)
+
 def feistel_encrypt(input, rounds, keys):
     # Split the input into left and right halves
     left, right = input[:4], input[4:]
 
     # Perform the specified number of rounds
     for i in range(rounds):
-        # Apply the round function, which is a bitwise AND operation
-        result = int(right, 2) & int(keys[i], 2)
-        
-        # Swap the left and right halves and XOR the result with the left half
-        left, right = right, "{0:b}".format(int(left, 2) ^ result).zfill(4)
+        left, right = feistel_round(left, right, keys[i])
     
     # Concatenate the left and right halves and return the result
     return left + right
@@ -19,13 +22,9 @@ def feistel_decrypt(input, rounds, keys):
     # Split the input into left and right halves
     left, right = input[:4], input[4:]
 
-    # Perform the specified number of rounds
-    for i in range(rounds):
-        # Apply the round function, which is a bitwise AND operation
-        result = int(left, 2) & int(keys[rounds - i - 1], 2)
-        
-        # Swap the left and right halves and XOR the result with the right half
-        right, left = left, "{0:b}".format(int(right, 2) ^ result).zfill(4)
+    # Perform the specified number of rounds in reverse order
+    for i in reversed(range(rounds)):
+        left, right = feistel_round(left, right, keys[i])
     
     # Concatenate the left and right halves and return the result
     return left + right
@@ -55,19 +54,23 @@ if __name__ == '__main__':
 
     # Encrypt or decrypt the input using the specified round keys
     if args.decrypt:
-        # Check that decryption keys were provided
-        if len(args.keys) != args.rounds:
-            print('Decryption requires the same number of keys as encryption')
-            exit()
-
-        decrypted = feistel_decrypt(args.input, args.rounds, list(reversed(args.keys)))
+        decrypted = feistel_decrypt(args.input, args.rounds, args.keys)
         print('Decrypted:', decrypted)
 
+        # Encrypt the decrypted output using the same keys and verify that it matches the original input
+        encrypted = feistel_encrypt(decrypted, args.rounds, args.keys)
+        if encrypted == args.input:
+            print('Original input:', args.input)
+        else:
+            print('Error: Decrypted output does not match original input')
     else:
         encrypted = feistel_encrypt(args.input, args.rounds, args.keys)
         print('Encrypted:', encrypted)
 
         # Decrypt the encrypted output using the same keys and verify that it matches the original input
-        decrypted = feistel_decrypt(encrypted, args.rounds, list(reversed(args.keys)))
-       
+        decrypted = feistel_decrypt(encrypted, args.rounds, args.keys)
+        if decrypted == args.input:
+            print('Original input:', args.input)
+        else:
+            print('Error: Decrypted output does not match original input')
 

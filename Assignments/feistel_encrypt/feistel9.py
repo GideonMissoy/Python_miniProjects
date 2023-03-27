@@ -63,11 +63,6 @@ if __name__ == '__main__':
         decrypted = feistel_decrypt(args.input, args.rounds, list(reversed(args.keys)))
         print('Decrypted:', decrypted)
 
-        # Verify that decrypted output matches original input
-        if decrypted == args.input:
-            print('Original input:', args.input)
-        else:
-            print('Error: Decrypted output does not match original input')
     else:
         encrypted = feistel_encrypt(args.input, args.rounds, args.keys)
         print('Encrypted:', encrypted)
